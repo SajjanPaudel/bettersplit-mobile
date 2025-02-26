@@ -8,13 +8,17 @@
     "scheme": "betetrsplit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "androidStatusBar": {
+      "backgroundColor": "#121212",
+      "barStyle": "light-content"
+    },
     "ios": {
       "supportsTablet": true
     },
-      "androidNavigationBar": {
-        "visible": "immersive",
-        "backgroundColor": "#000000"
-      },
+    "androidNavigationBar": {
+      "visible": "sticky-immersive",
+      "backgroundColor": "#000000"
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -33,8 +37,7 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "cover",
-          "backgroundColor": "#ffffff",
-          "enableFullScreenImage_legacy":true
+          "backgroundColor": "#121212"
         }
       ]
     ],

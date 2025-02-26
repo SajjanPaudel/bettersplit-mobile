@@ -56,7 +56,7 @@ const SignIn = () => {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
         >
-            <SafeAreaView className='flex-1'>
+            {/* <SafeAreaView className='flex-1'> */}
                 <ScrollView className='flex-1' contentContainerStyle={{ flexGrow: 1 }}>
 
                     <Text className='mt-10 text-3xl text-bold text-gray-400 left-10'></Text>
@@ -121,7 +121,7 @@ const SignIn = () => {
                         </View>
                     </View>
                 </ScrollView>
-            </SafeAreaView>
+            {/* </SafeAreaView> */}
         </LinearGradient>
     )
 }
