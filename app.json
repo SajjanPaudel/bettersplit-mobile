@@ -1,16 +1,20 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "BetterSplit",
+    "slug": "better_split",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/images/splash-icon.png",
+    "scheme": "betetrsplit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
+      "androidNavigationBar": {
+        "visible": "immersive",
+        "backgroundColor": "#000000"
+      },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -28,9 +32,9 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "resizeMode": "cover",
+          "backgroundColor": "#ffffff",
+          "enableFullScreenImage_legacy":true
         }
       ]
     ],
