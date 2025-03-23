@@ -20,7 +20,7 @@ const themes = {
     border: '#CAC4D0',
     error: '#B3261E',
     success: '#146B3A',
-    tabBar: '#E0E0E0',
+    tabBar: '#C0C0C0',
     surface: '#FFFBFE',
     surfaceVariant: '#E7E0EC',
     outline: '#79747E',

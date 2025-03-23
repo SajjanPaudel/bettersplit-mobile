@@ -15,7 +15,7 @@ const expense = () => {
 
   return (
       <View className="p-4 h-full" style={{ backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text }} className="text-2xl font-bold mb-4">All Expenses</Text>
+        <Text style={{ color: colors.text }} className="text-2xl font-bold mt-10 mb-4">Add New Expense</Text>
         
         <View className="relative">
           <TouchableOpacity 

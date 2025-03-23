@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, withTiming } from "react-native-reanimated";
 import React from 'react';
 import { useTheme } from "../../../context/ThemeContext";
+import 'react-native-gesture-handler';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -15,24 +16,23 @@ const TabIcon = ({ name, color, size, focused }: {
     focused: boolean
 }) => {
     const scale = useSharedValue(1);
-    const translateY = useSharedValue(0);
 
     const animatedStyle = useAnimatedStyle(() => {
+        scale.value = withSpring(focused ? 1.1 : 1, {
+            duration: 10,
+            stiffness: 10,
+        });
         return {
             transform: [
                 { scale: scale.value },
-                { translateY: translateY.value }
             ],
         };
     }, [focused]);
 
-
     return (
         <View className="items-center justify-center h-full">
-            <Animated.View style={animatedStyle}>
-                <View className="items-center justify-center w-14 h-14">
-                    <Ionicons name={name} size={size} color={color} />
-                </View>
+            <Animated.View style={[animatedStyle, { height: '100%', justifyContent: 'center' }]}>
+                <Ionicons name={name} size={size} color={color} />
             </Animated.View>
         </View>
     );
@@ -43,7 +43,7 @@ export default function TabLayout() {
     const { colors = { background: '#141218', text: '#E6E1E5', card: '#1C1B1F', border: '#49454F', primary: '#D0BCFF', secondary: '#4A4458', error: '#F2B8B5', success: '#7DD491', tabBar: '#1C1B1F', surface: '#141218', surfaceVariant: '#49454F', outline: '#938F99', onPrimary: '#381E72', onSurface: '#E6E1E5', statusBar: 'light-content' } } = useTheme();
     const tabBarHeight = useMemo(() => {
         const { height } = Dimensions.get('window');
-        return height * 0.09; // Adjusted to match YouTube's height
+        return height * 0.1; // Adjusted to match YouTube's height
     }, []);
 
     return (
@@ -52,34 +52,39 @@ export default function TabLayout() {
                     headerStyle: {
                         backgroundColor: colors.background,
                     },
-                    headerShadowVisible: false,
+                    headerShadowVisible: true,
                     tabBarStyle: {
-                        backgroundColor: colors.tabBar,
+                        backgroundColor: 'transparent',
                         borderTopWidth: 0,
                         height: tabBarHeight,
-                        paddingTop: 12,
-                        paddingBottom: 12,
-                        // bottom: 10,
-                        width: 'auto',
+                        paddingTop: 16,
+                        marginLeft: 10,
+                        marginRight: 10,
+                        bottom: 10,
+                        width: '95%',
+                        alignSelf: 'center',
                         elevation: 0,
-                        borderBottomLeftRadius:0,
-                        borderBottomRightRadius:0,
-                        borderTopLeftRadius: 30,
-                        borderTopRightRadius: 30,
-                        shadowColor: '#000',
-                        shadowOffset: {
-                            width: 0,
-                            height: 4,
-                        },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-                        // borderWidth: 1,
-                        // borderColor: 'rgba(147, 51, 234, 0.1)',
-                        backdropFilter: 'blur(10px)',
-                        overflow: 'hidden',
+                        overflow: 'visible',
                         position: 'absolute'
                     },
+                    tabBarBackground: () => (
+                        <View style={{
+                            backgroundColor: colors.tabBar,
+                            height: '100%',
+                            width: '100%',
+                            borderBottomLeftRadius: 30,
+                            borderBottomRightRadius: 30,
+                            borderTopLeftRadius: 30,
+                            borderTopRightRadius: 30,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 8,
+                            position: 'absolute',
+                            overflow: 'hidden',
+                        }}>
+                        </View>
+                    ),
                     tabBarLabelStyle: {
                         marginTop: 2,
                         fontSize: 10,
@@ -87,12 +92,6 @@ export default function TabLayout() {
                     },
                     tabBarActiveTintColor: '#9333EA',
                     tabBarInactiveTintColor: '#9CA3AF',
-                    headerTitle: () => (
-                        <View className="flex flex-row items-center">
-                            <Text className="text-gray-400 text-xl font-bold">B</Text>
-                            <Text className="text-purple-500 text-xl font-bold">S</Text>
-                        </View>
-                    ),
                     headerRight: () => (
                         <View className="mr-4 flex-row gap-4">
                             <TouchableOpacity onPress={() => router.push("/(root)/(tabs)/test")}>
@@ -102,7 +101,7 @@ export default function TabLayout() {
                                 <Ionicons name="person-circle-outline" size={28} color="#9CA3AF" />
                             </TouchableOpacity>
                         </View>
-                    ),
+                    )
                 }}
             >
                 <Tabs.Screen
@@ -118,21 +117,50 @@ export default function TabLayout() {
                                 focused={focused}
                             />
                         ),
+                        headerTitle: '',
+                        headerShown: false
                     }}
                 />
                 <Tabs.Screen
                     name="expense"
                     options={{
-                        title: "expense",
+                        title: "Expense",
                         tabBarLabel: () => null,
                         tabBarIcon: ({ color, size, focused }) => (
-                            <TabIcon
-                                name="add"
-                                size={24} // Fixed size to match YouTube
-                                color={color}
-                                focused={focused}
-                            />
+                            <View style={{
+                                position: 'absolute',
+                                top: -40,
+                                width: 80,
+                                height: 80,
+                                borderRadius: 50,
+                                // backgroundColor: colors.outline,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                // shadowColor: '#000',
+                                // shadowOffset: { width: 0, height: 2 },
+                                // shadowOpacity: 0.3,
+                                // shadowRadius: 4,
+                                // elevation: 5,
+                            }}>
+                                <View style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 45,
+                                    backgroundColor: 'purple',
+                                    // borderStyle: 'dashed',
+                                }}/>
+                                <TabIcon
+                                    name="add"
+                                    size={28}
+                                    color= {'white'}
+                                    focused={focused}
+                                />
+                            </View>
                         ),
+                        headerTitle: '',
+                        headerShown: false,
+                        href:null
                     }}
                 />
                 <Tabs.Screen
@@ -142,12 +170,13 @@ export default function TabLayout() {
                         tabBarLabel: () => null,
                         tabBarIcon: ({ color, size, focused }) => (
                             <TabIcon
-                                name="person-circle-outline"
-                                size={24} // Fixed size to match YouTube
+                                name={focused ? "person" : "person-outline"}
+                                size={24}
                                 color={color}
                                 focused={focused}
                             />
                         ),
+                        headerTitle: ''
                     }}
                 />
 
@@ -158,6 +187,23 @@ export default function TabLayout() {
                     options={{
                         href: null, // prevent from showing in tab bar
                     }}
+                />
+
+                <Tabs.Screen
+                    name="transaction-detail"
+                    options={{
+                        href: null, // prevent from showing in tab bar
+                        headerShown: false
+                    }}
+                    
+                />
+                <Tabs.Screen
+                    name="settlement-detail"
+                    options={{
+                        href: null, // prevent from showing in tab bar
+                        headerShown: false
+                    }}
+                    
                 />
 
             </Tabs>

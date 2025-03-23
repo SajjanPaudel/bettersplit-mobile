@@ -1,12 +1,28 @@
-import { View, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native'
+import { View, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
+import { useRouter, useFocusEffect, usePathname } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './_layout';
+import axios from 'axios';
+import { endpoints } from '../config/api';
 interface ApiResponse {
     success: boolean;
-    data: string;
+    data: {
+        refresh_token: string;
+        access_token: string;
+        user: {
+            id: number;
+            username: string;
+            email: string;
+            phone_number: string;
+            address: string;
+            profile_picture: string | null;
+            first_name: string;
+            last_name: string;
+        }
+    } | string;
 }
 
 const SignIn = () => {
@@ -14,7 +30,8 @@ const SignIn = () => {
     const [password, setPassword] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<string>()
-
+    const { user } = useAuth();
+    const router = useRouter();
     const handleSignIN = async () => {
         setError('')
         if (!username || !password) {
@@ -24,26 +41,48 @@ const SignIn = () => {
         }
         try {
             setLoading(true)
-            const response = await fetch('https://apibettersplit.vercel.app/api/users/login/', {
-                method: 'POST',
+            const response = await axios.post(endpoints.login, {
+                username,
+                password
+            }, {
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username,
-                    password
-                })
-            })
-            const data: ApiResponse = await response.json()
-            if (!response.ok || !data.success) {
-                throw new Error(data.data || 'Sign in failed')
+                }
+            });
+        
+            const data: ApiResponse = response.data; // axios already parses JSON
+        
+            if (!data.success) {
+                throw new Error(typeof data.data === 'string' ? data.data : 'Sign in failed');
             }
-            router.push('/(root)/(tabs)')
-
+        
+            console.log('Login successful:', response.data);
+            
+            // Store complete user data and tokens
+            if (typeof data.data !== 'string') {
+                try {
+                    // Store tokens and user data
+                    await AsyncStorage.setItem('user', JSON.stringify(data.data.user));
+                    await AsyncStorage.setItem('tokens', JSON.stringify({
+                        refresh_token: data.data.refresh_token,
+                        access_token: data.data.access_token
+                    }));
+                    
+                    console.log('Storage complete, navigating...');
+                    
+                    // Force a reload of the app to trigger the auth context update
+                        router.replace('/(root)/(tabs)');
+                    
+                    console.log('Navigation triggered');
+                } catch (storageError) {
+                    console.error('Storage error:', storageError);
+                    throw new Error('Failed to save login information');
+                }
+            }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Sign in failed'
             setError(errorMessage)
-            console.log(error)
+            console.error('Login error:', error);
         } finally {
             setLoading(false)
         }
@@ -56,8 +95,15 @@ const SignIn = () => {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
         >
-            {/* <SafeAreaView className='flex-1'> */}
-                <ScrollView className='flex-1' contentContainerStyle={{ flexGrow: 1 }}>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+            >
+                <ScrollView 
+                    className='flex-1' 
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps="handled"
+                >
 
                     <Text className='mt-10 text-3xl text-bold text-gray-400 left-10'></Text>
                     <View className=' mr-[5%] ml-[5%] w-[90%] items-center justify-center'>
@@ -69,7 +115,7 @@ const SignIn = () => {
                         </Text>
                     </View>
 
-                    <View className='flex-1 justify-center px-4'>
+                    <View className='flex-1 justify-center px-4 mb-8'>
                         <View className='bg-white/5 py-8 px-4 rounded-2xl'>
                             <Text className='text-4xl font-light text-white mb-8'>Sign in</Text>
 
@@ -121,7 +167,7 @@ const SignIn = () => {
                         </View>
                     </View>
                 </ScrollView>
-            {/* </SafeAreaView> */}
+            </KeyboardAvoidingView>
         </LinearGradient>
     )
 }
