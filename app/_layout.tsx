@@ -4,6 +4,7 @@ import './globals.css';
 import { StatusBar, View, ActivityIndicator } from 'react-native';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { HapticProvider } from '../context/HapticContext';
 
 // Define the type for the user
 interface User {
@@ -125,10 +126,12 @@ function Layout() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Layout />
-      </AuthProvider>
-    </ThemeProvider>
+    <HapticProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Layout />
+        </AuthProvider>
+      </ThemeProvider>
+    </HapticProvider>
   );
 }

@@ -1,32 +1,29 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-
+import {useMemo } from 'react';
 export default function TransactionDetail() {
+  const tabBarHeight = useMemo(() => {
+    const { height } = Dimensions.get('window');
+    return height * 0.09;
+  }, []);
   const { colors } = useTheme();
   const params = useLocalSearchParams();
+  const transaction = params.transaction ? JSON.parse(params.transaction as string) : null;
 
-  // Mock transaction data - replace with actual data fetching
-  const transaction = {
-    id: '15',
-    title: 'Dinner at Restaurant',
-    amount: 45.00,
-    date: '2024-01-20',
-    paidBy: 'Haritha',
-    participants: [
-      { name: 'Haritha', amount: 15.00, status: 'paid' },
-      { name: 'Sajjan', amount: 15.00, status: 'pending' },
-      { name: 'Sayun', amount: 15.00, status: 'pending' },
-    ],
-    notes: 'Friday night dinner',
-    category: 'Food & Dining'
-  };
+  if (!transaction) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <Text style={{ color: colors.text }}>No transaction data found</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background , marginBottom: tabBarHeight}}>
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}
         <View className="px-4 py-3 flex-row items-center justify-between">
@@ -46,9 +43,8 @@ export default function TransactionDetail() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView className="flex-1 px-4">
-          <Animated.View entering={FadeInUp.delay(100)} className="mt-4">
-            {/* Transaction Amount */}
+        <ScrollView className="flex-1 px-4" >
+          <Animated.View entering={FadeInUp.delay(100)} className="">
             <View 
               className="p-6 rounded-2xl items-center"
               style={{ backgroundColor: colors.card }}
@@ -57,7 +53,7 @@ export default function TransactionDetail() {
                 Total Amount
               </Text>
               <Text style={{ color: colors.text }} className="text-3xl font-bold">
-                ${transaction.amount.toFixed(2)}
+                Rs {parseFloat(transaction.amount).toFixed(2)}
               </Text>
               <Text style={{ color: colors.outline }} className="text-sm mt-2">
                 {transaction.date}
@@ -66,7 +62,6 @@ export default function TransactionDetail() {
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(200)} className="mt-6">
-            {/* Paid By Section */}
             <View 
               className="p-4 rounded-2xl mb-4"
               style={{ backgroundColor: colors.card }}
@@ -77,16 +72,15 @@ export default function TransactionDetail() {
               <View className="flex-row items-center">
                 <View className="w-10 h-10 rounded-full bg-purple-500/10 items-center justify-center">
                   <Text style={{ color: colors.primary }} className="text-sm font-medium">
-                    {transaction.paidBy.substring(0, 2).toUpperCase()}
+                    {transaction.paid_by.substring(0, 2).toUpperCase()}
                   </Text>
                 </View>
                 <Text style={{ color: colors.text }} className="ml-3 text-base">
-                  {transaction.paidBy}
+                  {transaction.paid_by}
                 </Text>
               </View>
             </View>
 
-            {/* Participants Section */}
             <View 
               className="p-4 rounded-2xl"
               style={{ backgroundColor: colors.card }}
@@ -94,58 +88,53 @@ export default function TransactionDetail() {
               <Text style={{ color: colors.text }} className="text-sm font-medium mb-4">
                 Split Details
               </Text>
-              {transaction.participants.map((participant, index) => (
-                <View key={index} className="flex-row items-center justify-between mb-4 last:mb-0">
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 rounded-full bg-purple-500/10 items-center justify-center">
-                      <Text style={{ color: colors.primary }} className="text-sm font-medium">
-                        {participant.name.substring(0, 2).toUpperCase()}
+              <ScrollView style={{ height: 230 , gap:2}} showsVerticalScrollIndicator={false}>
+                {Object.entries(transaction.splits).map(([name, amount], index) => (
+                  <View key={index} className="flex-row items-center justify-between mb-3">
+                    <View className="flex-row items-center flex-1 bg-green-400/30 p-2 rounded-xl">
+                      <View className="w-10 h-10 rounded-full bg-purple-500/10 items-center justify-center">
+                        <Text style={{ color: colors.primary }} className="text-sm font-medium">
+                          {name.substring(0, 2).toUpperCase()}
+                        </Text>
+                      </View>
+                      <Text style={{ color: colors.text }} className="ml-3 text-base">
+                        {name}
                       </Text>
+                      <Text style={{ color: colors.text }} className="text-base ml-auto">
+                      Rs {parseFloat(amount as string).toFixed(2)}
+                    </Text>
                     </View>
-                    <Text style={{ color: colors.text }} className="ml-3 text-base">
-                      {participant.name}
-                    </Text>
+                    
                   </View>
-                  <View className="items-end">
-                    <Text style={{ color: colors.text }} className="text-base">
-                      ${participant.amount.toFixed(2)}
-                    </Text>
-                    <Text 
-                      style={{ 
-                        color: participant.status === 'paid' ? '#34D399' : '#F87171'
-                      }} 
-                      className="text-sm"
-                    >
-                      {participant.status === 'paid' ? 'Paid' : 'Pending'}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+                ))}
+              </ScrollView>
             </View>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(300)} className="mt-6 mb-8">
-            {/* Additional Details */}
             <View 
               className="p-4 rounded-2xl"
               style={{ backgroundColor: colors.card }}
             >
               <View className="mb-4">
                 <Text style={{ color: colors.outline }} className="text-sm mb-1">
-                  Category
+                  Transaction Name
                 </Text>
                 <Text style={{ color: colors.text }} className="text-base">
-                  {transaction.category}
+                  {transaction.name}
                 </Text>
               </View>
-              <View>
-                <Text style={{ color: colors.outline }} className="text-sm mb-1">
-                  Notes
-                </Text>
-                <Text style={{ color: colors.text }} className="text-base">
-                  {transaction.notes}
-                </Text>
-              </View>
+              {transaction.group && (
+                <View>
+                  <Text style={{ color: colors.outline }} className="text-sm mb-1">
+                    Group
+                  </Text>
+                  <Text style={{ color: colors.text }} className="text-base">
+                    {transaction.group}
+                  </Text>
+                </View>
+              )}
+              
             </View>
           </Animated.View>
         </ScrollView>

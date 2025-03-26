@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { useTheme } from '../../../context/ThemeContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useHaptic } from '../../../context/HapticContext';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('payment');
@@ -15,6 +16,7 @@ const Profile = () => {
     { label: 'Dark', value: 'dark' },
     { label: 'Pitch Black', value: 'pblack' }
   ];
+  const { isHapticEnabled, hapticStrength, toggleHaptic, setHapticStrength, triggerHaptic } = useHaptic();
 
   const handleLogout = async () => {
     Alert.alert(
@@ -84,9 +86,8 @@ const Profile = () => {
         </View>
       </View>
       <Text className="px-4 py-4 mx-4" style={{ color: colors.text }}> Settings </Text>
-      <View className="px-4 py-4 mx-4 my-2 rounded-2xl mb-4" style={{ backgroundColor: colors.card }}>
-
-        <View className="flex-row items-center justify-between">
+      {/* <View className="px-4 py-4 mx-4 my-2 rounded-2xl flex flex-col gap-4" style={{ backgroundColor: colors.card }}> */}
+        <View style={{ backgroundColor: colors.card }} className="px-4 py-4 mx-4 my-2 rounded-2xl flex-row items-center justify-between">
           <Text style={{ color: colors.text }} className="text-lg font-medium">Select Theme</Text>
           <TouchableOpacity
             className="flex-row items-center"
@@ -104,10 +105,8 @@ const Profile = () => {
         </View>
 
         {isThemeDropdownOpen && (
-          <View
-            className="mt-2 rounded-lg overflow-hidden"
-            style={{ backgroundColor: colors.card }}
-          >
+        <View style={{ backgroundColor: colors.card }} className="px-4 py-4 mx-4 my-2 rounded-2xl flex-col  justify-between">
+
             {themeOptions.map((option, index) => (
               <TouchableOpacity
                 key={option.value}
@@ -129,7 +128,57 @@ const Profile = () => {
             ))}
           </View>
         )}
-      </View>
+
+<View style={{ backgroundColor: colors.card }} className="px-4 py-4 mx-4 my-2 rounded-2xl flex-row items-center justify-between">
+            <Text style={{ color: colors.text }} className="text-lg font-medium">Haptic Feedback</Text>
+            <TouchableOpacity
+              onPress={toggleHaptic}
+              className="flex-row items-center"
+            >
+              <Text style={{ color: colors.text }} className="mr-2">
+                {isHapticEnabled ? 'On' : 'Off'}
+              </Text>
+              <Ionicons
+                name={isHapticEnabled ? 'toggle' : 'toggle-outline'}
+                size={24}
+                color={isHapticEnabled ? colors.primary : colors.text}
+              />
+            </TouchableOpacity>
+          </View>
+        
+          {isHapticEnabled && (
+        <View style={{ backgroundColor: colors.card }} className="px-4 py-4 mx-4 rounded-2xl">
+              <Text style={{ color: colors.text }} className="text-base mb-2">Haptic Strength</Text>
+              <View className="flex-row justify-between">
+                {(['light', 'medium', 'heavy', 'none'] as const).map((strength) => (
+                  <TouchableOpacity
+                    key={strength}
+                    onPressIn={() => {
+                      if (strength !== 'none') {
+                        triggerHaptic();
+                      }
+                      setHapticStrength(strength);
+                    }}
+
+                    
+                    className={`px-4 py-2 rounded-lg ${
+                      hapticStrength === strength ? 'bg-purple-600/20' : ''
+                    }`}
+                  >
+                    <Text
+                      style={{
+                        color: hapticStrength === strength ? colors.primary : colors.text
+                      }}
+                      className="capitalize"
+                    >
+                      {strength}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+      {/* </View> */}
       <View className="px-4 py-4 mx-4 my-2 rounded-2xl mb-4" style={{ backgroundColor: colors.card }}>
         <View className="flex-row items-center justify-between">
           <Text style={{ color: colors.text }} className="text-lg font-medium">Sign Out</Text>
