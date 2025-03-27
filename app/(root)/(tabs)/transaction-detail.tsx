@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import {useMemo } from 'react';
+import { useHaptic } from '../../../context/HapticContext';
+
 export default function TransactionDetail() {
   const tabBarHeight = useMemo(() => {
     const { height } = Dimensions.get('window');
@@ -13,6 +15,7 @@ export default function TransactionDetail() {
   const { colors } = useTheme();
   const params = useLocalSearchParams();
   const transaction = params.transaction ? JSON.parse(params.transaction as string) : null;
+  const { triggerHaptic } = useHaptic();
 
   if (!transaction) {
     return (
@@ -28,7 +31,10 @@ export default function TransactionDetail() {
         {/* Header */}
         <View className="px-4 py-3 flex-row items-center justify-between">
           <TouchableOpacity 
-            onPress={() => router.back()}
+            onPress={() => {
+              router.back();
+              triggerHaptic();
+            }}
             className="p-2 rounded-full"
             style={{ backgroundColor: colors.card }}
           >

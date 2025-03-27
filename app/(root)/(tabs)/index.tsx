@@ -282,16 +282,10 @@ export default function Index() {
                 .filter(([name]) => name === loggedInUser.username)
                 .map(([name, balance], index) => {
                   return (
-                    // <TouchableOpacity
-                    //   key={index}
-                    //   onPress={toggleExpand}
-                    //   activeOpacity={0.9}
-                    //   className="w-[95%]"
-                    // >
                     <View key={index} className={`rounded-xl pt-4 px-4 w-[93%]`} style={{
                       backgroundColor: colors.card,
-                      boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
-                      ...(theme === 'light' && { borderColor: colors.border, borderWidth: 1 })}} 
+                      boxShadow: '2px 3px 4px rgba(0, 0, 0, 0.1)'
+                    }}
                     >
                       <View className="flex-row items-center justify-between mb-3">
                         <View className="flex-row items-center">
@@ -307,59 +301,60 @@ export default function Index() {
                         </View>
                       </View>
 
-                      <View className="py-3 rounded-xl">
+                      <View className="py-3 rounded-xl ">
                         <View className="flex-row justify-between items-center">
                           <View className="w-full">
-                            <View className={`${balance.net >= 0 ? 'bg-green-600/20' : 'bg-red-600/20'} flex flex-row justify-between items-center p-4 rounded-xl`}>
-                              <View>
-                                <Text className={`text-sm font-medium ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                  {balance.net >= 0 ? 'Total Receiveable' : 'Total Payable'}
-                                </Text>
-                                <Text className={`text-3xl font-bold mt-1 ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                  Rs {Math.abs(balance.net).toFixed(2)}
-                                </Text>
-                                <Text style={{ color: colors.outline }} className="text-xs mt-1">
-                                  Updated {new Date().toLocaleDateString()}
-                                </Text>
-                              </View>
-                              <TouchableOpacity
-                                key={index}
-                                onPress={toggleExpand}
-                                activeOpacity={0.9}
-                              >
+                            <TouchableOpacity
+                              key={index}
+                              onPress={toggleExpand}
+                              activeOpacity={0.9}
+                            >
+                              <View className={`${balance.net >= 0 ? 'bg-green-600/20' : 'bg-red-600/20'} flex flex-row justify-between items-center p-4 rounded-xl`}>
+                                <View>
+                                  <Text className={`text-sm font-medium ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {balance.net >= 0 ? 'Total Receiveable' : 'Total Payable'}
+                                  </Text>
+                                  <Text className={`text-3xl font-bold mt-1 ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    Rs {Math.abs(balance.net).toFixed(2)}
+                                  </Text>
+                                  <Text style={{ color: colors.outline }} className="text-xs mt-1">
+                                    Updated {new Date().toLocaleDateString()}
+                                  </Text>
+                                </View>
                                 <Animated.View style={animatedRotate}>
                                   <Ionicons name="chevron-down" className="p-4" size={24} color={colors.primary} />
                                 </Animated.View>
-                              </TouchableOpacity>
-                            </View>
+                              </View>
 
-                            {/* Always visible section */}
-                            <View className="mt-3 rounded-md py-2">
-                              <View className="flex-row w-full justify-between gap-2">
-                                <View className="flex-row flex-1 items-center bg-green-800/20 p-3 rounded-xl">
-                                  <View className="w-10 h-10 mr-2 rounded-full bg-green-500/40 items-center justify-center">
-                                    <Ionicons name="arrow-up" size={18} color={colors.text} />
+                              {/* Always visible section */}
+                              <View className="mt-3 rounded-md py-2">
+                                <View className="flex-row w-full justify-between gap-2">
+                                  <View className="flex-row flex-1 items-center bg-green-800/20 p-3 rounded-xl">
+                                    <View className="w-10 h-10 mr-2 rounded-full bg-green-500/40 items-center justify-center">
+                                      <Ionicons name="arrow-up" size={18} color={colors.text} />
+                                    </View>
+                                    <View>
+                                      <Text style={{ color: colors.text }} className="text-xs">You paid</Text>
+                                      <Text className="text-base font-semibold text-green-400">
+                                        Rs {balance.paid.toFixed(2)}
+                                      </Text>
+                                    </View>
                                   </View>
-                                  <View>
-                                    <Text style={{ color: colors.text }} className="text-xs">You paid</Text>
-                                    <Text className="text-base font-semibold text-green-400">
-                                      Rs {balance.paid.toFixed(2)}
-                                    </Text>
-                                  </View>
-                                </View>
-                                <View className="flex-row flex-1 items-center bg-red-800/20 p-3 rounded-xl">
-                                  <View className="w-10 h-10 mr-2 rounded-full bg-red-500/40 items-center justify-center">
-                                    <Ionicons name="arrow-down" size={18} color={colors.text} />
-                                  </View>
-                                  <View>
-                                    <Text style={{ color: colors.text }} className="text-xs">You owed</Text>
-                                    <Text className="text-base font-semibold text-red-400">
-                                      Rs {balance.owed.toFixed(2)}
-                                    </Text>
+                                  <View className="flex-row flex-1 items-center bg-red-800/20 p-3 rounded-xl">
+                                    <View className="w-10 h-10 mr-2 rounded-full bg-red-500/40 items-center justify-center">
+                                      <Ionicons name="arrow-down" size={18} color={colors.text} />
+                                    </View>
+                                    <View>
+                                      <Text style={{ color: colors.text }} className="text-xs">You owed</Text>
+                                      <Text className="text-base font-semibold text-red-400">
+                                        Rs {balance.owed.toFixed(2)}
+                                      </Text>
+                                    </View>
                                   </View>
                                 </View>
                               </View>
-                            </View>
+
+                            </TouchableOpacity>
 
                             {/* Expandable section */}
                             <Animated.View style={animatedHeight}>
@@ -503,7 +498,7 @@ export default function Index() {
                                   </LinearGradient>
                                 </View>
                               </ScrollView>
-                              
+
                               {/* Card Indicator Dots */}
                               <View className="flex-row justify-center items-center mt-4 mb-2">
                                 {[0, 1, 2].map((index) => {
@@ -513,14 +508,14 @@ export default function Index() {
                                     '#3B82F6', // Blue for Settlements
                                     '#10B981'  // Green for Average
                                   ];
-                                  
+
                                   return (
-                                    <View 
+                                    <View
                                       key={index}
                                       className={`mx-1 rounded-full ${activeCardIndex === index ? 'w-3 h-3' : 'w-2 h-2'}`}
                                       style={{
-                                        backgroundColor: activeCardIndex === index 
-                                          ? cardColors[index] 
+                                        backgroundColor: activeCardIndex === index
+                                          ? cardColors[index]
                                           : colors.outline + '50',
                                         transform: [{ scale: activeCardIndex === index ? 1 : 0.8 }]
                                       }}
@@ -664,10 +659,9 @@ export default function Index() {
                           style={[
                             {
                               backgroundColor: colors.card,
-                              boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
-                              ...(theme === 'light' && { borderColor: colors.border, borderWidth: 1 })
+                              boxShadow: '2px 3px 4px rgba(0, 0, 0, 0.1)'
                             },
-                          ]}  
+                          ]}
                         >
                           <View className="flex-row items-center justify-between">
                             <View className="flex-row items-center flex-1">
@@ -733,19 +727,21 @@ export default function Index() {
                             style={[
                               {
                                 backgroundColor: colors.card,
-                                boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
-                                ...(theme === 'light' && { borderColor: colors.border, borderWidth: 1 })
+                                boxShadow: '2px 3px 4px rgba(0, 0, 0, 0.1)'
                               },
                             ]}
                           >
                             <View className="flex-row items-center justify-between">
                               <View className="flex-row items-center flex-1">
                                 <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center">
-                                {settlement.individual_settlements.length > 1 ? 
-                                <Ionicons name="swap-horizontal-outline" size={20} color="#60A5FA" /> :
-                                <Ionicons name="arrow-forward-outline" size={20} color="#60A5FA" />
-                              }
-                                  
+                                  {settlement.individual_settlements.length > 1 ?
+                                    <Ionicons name="swap-horizontal-outline" size={20}
+                                      color={settlement.from === loggedInUser.username ? '#FF0000' : '#00FF00'}
+                                    /> :
+                                    <Ionicons name="arrow-forward-outline" size={20}
+                                      color={settlement.from === loggedInUser.username ? '#FF0000' : '#00FF00'}
+                                    />
+                                  }
                                 </View>
                                 <View className="ml-3 flex-1">
                                   <Text style={{ color: colors.text }} className="text-base font-medium">

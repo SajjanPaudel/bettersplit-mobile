@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useState, useEffect } from 'react';
+import { useHaptic } from '../../../context/HapticContext';
 
 interface IndividualSettlement {
   from: string;
@@ -26,6 +27,7 @@ export default function SettlementDetail() {
   const params = useLocalSearchParams();
   const [settlement, setSettlement] = useState<SettlementData | null>(null);
   const [date] = useState(new Date().toISOString().split('T')[0]);
+  const { triggerHaptic } = useHaptic();
 
   useEffect(() => {
     if (params.settlement) {
@@ -44,7 +46,11 @@ export default function SettlementDetail() {
         {/* Header */}
         <View className="px-4 py-3 flex-row items-center justify-between">
           <TouchableOpacity 
-            onPress={() => router.back()}
+            onPress={() => {
+              router.back();
+              triggerHaptic();
+            }
+            }
             className="p-2 rounded-full"
             style={{ backgroundColor: colors.card }}
           >
