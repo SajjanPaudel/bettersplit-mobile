@@ -1,7 +1,8 @@
 import Constants from 'expo-constants';
 
 // Get API URL from Expo's extra in app.json or environment variables
-export const API_URL = process.env.EXPO_PUBLIC_API_URL
+export const API_URL = Constants.expoConfig.extra.EXPO_PUBLIC_API_URL;
+console.log(API_URL)
 
 export const endpoints = {
   users: `${API_URL}/users/`,

@@ -40,7 +40,7 @@ const TabIcon = ({ name, color, size, focused }: {
 
 
 export default function TabLayout() {
-    const { colors = { background: '#141218', text: '#E6E1E5', card: '#1C1B1F', border: '#49454F', primary: '#D0BCFF', secondary: '#4A4458', error: '#F2B8B5', success: '#7DD491', tabBar: '#1C1B1F', surface: '#141218', surfaceVariant: '#49454F', outline: '#938F99', onPrimary: '#381E72', onSurface: '#E6E1E5', statusBar: 'light-content' } } = useTheme();
+    const { colors } = useTheme();
     const tabBarHeight = useMemo(() => {
         const { height } = Dimensions.get('window');
         return height * 0.1; // Adjusted to match YouTube's height
