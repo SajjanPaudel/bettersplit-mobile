@@ -269,7 +269,8 @@ export default function Index() {
             {isLoading ? (
               <View key='loading-card' className={`rounded-xl pt-4 px-4 w-[93%] items-center justify-center`} style={{
                 backgroundColor: colors.card,
-                height: balanceCardHeight,
+                height: 220,
+                marginHorizontal: 16
               }}>
                 <View className="flex-row items-center">
                   <Ionicons name="wallet-outline" size={24} color={colors.primary} />
@@ -277,261 +278,259 @@ export default function Index() {
                 </View>
               </View>
             ) : (
-
-              Object.entries(balances)
-                .filter(([name]) => name === loggedInUser.username)
-                .map(([name, balance], index) => {
-                  return (
-                    <View key={index} className={`rounded-xl pt-4 px-4 w-[93%]`} style={{
-                      backgroundColor: colors.card,
-                      boxShadow: '2px 3px 4px rgba(0, 0, 0, 0.1)'
-                    }}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                decelerationRate="fast"
+                snapToInterval={screenWidth} // Changed from screenWidth
+                snapToAlignment="start"
+                contentContainerStyle={{
+                  paddingHorizontal: 16,
+                }}
+                className="mt-4"
+                onScroll={(event) => {
+                  const contentOffsetX = event.nativeEvent.contentOffset.x;
+                  const newIndex = Math.round(contentOffsetX / (screenWidth)); // Updated calculation
+                  if (newIndex !== activeCardIndex) {
+                    setActiveCardIndex(newIndex);
+                    triggerHaptic();
+                  }
+                }}
+                scrollEventThrottle={16}
+              >
+                {/* Balance Card */}
+                {Object.entries(balances)
+                  .filter(([name]) => name === loggedInUser.username)
+                  .map(([name, balance], index) => (
+                    <View
+                      key="balance-card"
+                      className="rounded-2xl overflow-hidden"
+                      style={{
+                        width: screenWidth - 32,
+                        height: 220,
+                        marginRight: 16
+                      }}
                     >
-                      <View className="flex-row items-center justify-between mb-3">
-                        <View className="flex-row items-center">
-                          <Ionicons name="wallet-outline" size={24} color={colors.primary} className="mr-2" />
-                          <Text style={{ color: colors.text }} className="text-xl font-semibold px-2">Financial Overview</Text>
-                        </View>
-                        <View className="flex-row items-center">
-                          <View className={`px-3 py-1 rounded-full ${balance.net >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                            <Text className={`text-xs font-medium ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                              {balance.net >= 0 ? 'To Receive' : 'To Pay'}
+                      <LinearGradient
+                          colors={balance.net <= 0
+                            ? ['#1C1B1F', '#059669', '#047857']  // Green gradient for positive balance
+                            : ['#1C1B1F','#dc2626', '#b91c1c']  // Red gradient for negative balance
+                          }
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{ flex: 1, padding: 16 }}
+                      >
+                        <View className="flex-row justify-between items-start">
+                          <View className="w-14 h-14 rounded-full items-center justify-center" style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 4
+                          }}>
+                            <Ionicons
+                              name={balance.net >= 0 ? "arrow-down-circle-outline" : "arrow-up-circle-outline"}
+                              size={28}
+                              color="#ffffff"
+                            />
+                          </View>
+                          <View className="px-3 py-1 rounded-full" style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                            borderWidth: 1,
+                            borderColor: 'rgba(255, 255, 255, 0.4)'
+                          }}>
+                            <Text style={{ color: '#ffffff' }} className="text-xs font-medium">
+                              {balance.net >= 0 ? 'Credit' : 'Debit'}
                             </Text>
                           </View>
                         </View>
-                      </View>
 
-                      <View className="py-3 rounded-xl ">
-                        <View className="flex-row justify-between items-center">
-                          <View className="w-full">
-                            <TouchableOpacity
-                              key={index}
-                              onPress={toggleExpand}
-                              activeOpacity={0.9}
-                            >
-                              <View className={`${balance.net >= 0 ? 'bg-green-600/20' : 'bg-red-600/20'} flex flex-row justify-between items-center p-4 rounded-xl`}>
-                                <View>
-                                  <Text className={`text-sm font-medium ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                    {balance.net >= 0 ? 'Total Receiveable' : 'Total Payable'}
-                                  </Text>
-                                  <Text className={`text-3xl font-bold mt-1 ${balance.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                    Rs {Math.abs(balance.net).toFixed(2)}
-                                  </Text>
-                                  <Text style={{ color: colors.outline }} className="text-xs mt-1">
-                                    Updated {new Date().toLocaleDateString()}
-                                  </Text>
-                                </View>
-                                <Animated.View style={animatedRotate}>
-                                  <Ionicons name="chevron-down" className="p-4" size={24} color={colors.primary} />
-                                </Animated.View>
-                              </View>
+                        <View className="mt-4">
+                          <Text style={{ color: 'rgba(255, 255, 255, 0.9)' }} className="text-sm mb-1">
+                            {balance.net >= 0 ? 'Total Receivable' : 'Total Payable'}
+                          </Text>
+                          <Text style={{
+                            color: '#ffffff',
+                            textShadowColor: 'rgba(0, 0, 0, 0.2)',
+                            textShadowOffset: { width: 1, height: 1 },
+                            textShadowRadius: 3
+                          }} className="text-4xl font-bold">
+                            Rs {Math.abs(balance.net).toFixed(2)}
+                          </Text>
+                        </View>
 
-                              {/* Always visible section */}
-                              <View className="mt-3 rounded-md py-2">
-                                <View className="flex-row w-full justify-between gap-2">
-                                  <View className="flex-row flex-1 items-center bg-green-800/20 p-3 rounded-xl">
-                                    <View className="w-10 h-10 mr-2 rounded-full bg-green-500/40 items-center justify-center">
-                                      <Ionicons name="arrow-up" size={18} color={colors.text} />
-                                    </View>
-                                    <View>
-                                      <Text style={{ color: colors.text }} className="text-xs">You paid</Text>
-                                      <Text className="text-base font-semibold text-green-400">
-                                        Rs {balance.paid.toFixed(2)}
-                                      </Text>
-                                    </View>
-                                  </View>
-                                  <View className="flex-row flex-1 items-center bg-red-800/20 p-3 rounded-xl">
-                                    <View className="w-10 h-10 mr-2 rounded-full bg-red-500/40 items-center justify-center">
-                                      <Ionicons name="arrow-down" size={18} color={colors.text} />
-                                    </View>
-                                    <View>
-                                      <Text style={{ color: colors.text }} className="text-xs">You owed</Text>
-                                      <Text className="text-base font-semibold text-red-400">
-                                        Rs {balance.owed.toFixed(2)}
-                                      </Text>
-                                    </View>
-                                  </View>
-                                </View>
-                              </View>
+                        <View className="mt-4 flex-row gap-2">
+                          <View className="flex-1 bg-green-400  rounded-xl p-2 " style={{
+                            borderWidth: 1,
+                            borderColor: 'rgba(255, 255, 255, 0.15)'
+                          }}>
+                            <View className="flex-row items-center">
+                              <Ionicons
+                                name="arrow-down"
+                                size={16}
+                                color="#FFFFFF" // Green for receive
+                              />
+                              <Text style={{ color: 'rgba(255, 255, 255, 0.9)' }} className="text-xs ml-1">To Receive</Text>
+                            </View>
+                            <Text style={{ color: '#FFFFFF' }} className="text-sm font-bold mt-1 pl-1">
+                              Rs {balance.paid?.toFixed(2) || '0.00'}
+                            </Text>
+                          </View>
 
-                            </TouchableOpacity>
-
-                            {/* Expandable section */}
-                            <Animated.View style={animatedHeight}>
-                              <View className="mt-3 rounded-md py-2">
-                                <View className="rounded-xl">
-                                  <View className="flex-row justify-between items-center">
-                                    <Text style={{ color: colors.text }} className="text-lg font-semibold">Quick Summary</Text>
-                                    <View className="px-3 py-1.5 rounded-full" style={{ backgroundColor: colors.primary + '30' }}>
-                                      <Text style={{ color: colors.primary }} className="text-xs font-medium">Last 7 days</Text>
-                                    </View>
-                                  </View>
-                                  {/* Swipable Cards - Redesigned to be larger and more visually appealing */}
-                                </View>
-                              </View>
-
-                              {/* Redesigned Quick Summary Cards - Moved outside container */}
-                              <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                pagingEnabled
-                                decelerationRate="fast"
-                                snapToInterval={screenWidth * 0.9 + 16}
-                                snapToAlignment="start"
-                                // contentContainerStyle={{ paddingLeft: 16, paddingRight: 32 }}
-                                className="mt-4"
-                                onScroll={(event) => {
-                                  const contentOffsetX = event.nativeEvent.contentOffset.x;
-                                  const cardWidth = screenWidth * 0.9 + 16; // Card width + margin
-                                  const newIndex = Math.round(contentOffsetX / cardWidth);
-                                  if (newIndex !== activeCardIndex) {
-                                    setActiveCardIndex(newIndex);
-                                    triggerHaptic();
-                                  }
-                                }}
-                                scrollEventThrottle={16}
-                              >
-                                {/* Card 1: Transactions */}
-                                <View
-                                  key="transactions-card"
-                                  className="rounded-2xl overflow-hidden"
-                                  style={{
-                                    width: 355,
-                                    height: 180,
-                                    marginRight: 16,
-                                    position: 'relative'
-                                  }}
-                                >
-                                  <LinearGradient
-                                    colors={['#9333EA', '#7E22CE', '#6B21A8']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    style={{ flex: 1, padding: 16 }}
-                                  >
-                                    <View className="flex-row justify-between items-start mb-4">
-                                      <View className="w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
-                                        <Ionicons name="swap-horizontal" size={28} color="#ffffff" />
-                                      </View>
-                                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
-                                        <Text style={{ color: '#ffffff' }} className="text-xs font-medium">Transactions</Text>
-                                      </View>
-                                    </View>
-                                    <View className="items-start justify-center py-2">
-                                      <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm mb-1">Total Transactions</Text>
-                                      <Text style={{ color: '#ffffff' }} className="text-4xl font-bold">{transactions.length}</Text>
-                                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }} className="text-xs mt-3">
-                                        {transactions.length > 0 ? `Last: ${transactions[0]?.date}` : 'No recent transactions'}
-                                      </Text>
-                                    </View>
-                                  </LinearGradient>
-                                </View>
-
-                                {/* Card 2: Settlements */}
-                                <View
-                                  key="settlements-card"
-                                  className="rounded-2xl overflow-hidden"
-                                  style={{
-                                    width: 353,
-                                    height: 180,
-                                    marginHorizontal: 16
-                                  }}
-                                >
-                                  <LinearGradient
-                                    colors={['#3B82F6', '#2563EB', '#1D4ED8']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    style={{ flex: 1, padding: 16 }}
-                                  >
-                                    <View className="flex-row justify-between items-start mb-4">
-                                      <View className="w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
-                                        <Ionicons name="git-network-outline" size={28} color="#ffffff" />
-                                      </View>
-                                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
-                                        <Text style={{ color: '#ffffff' }} className="text-xs font-medium">Settlements</Text>
-                                      </View>
-                                    </View>
-                                    <View className="items-start justify-center py-2">
-                                      <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm mb-1">Total Settlements</Text>
-                                      <Text style={{ color: '#ffffff' }} className="text-4xl font-bold">{settlements.length}</Text>
-                                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }} className="text-xs mt-3">
-                                        {settlements.length > 0 ? 'Pending resolution' : 'All settled up'}
-                                      </Text>
-                                    </View>
-                                  </LinearGradient>
-                                </View>
-
-                                {/* Card 3: Average Transaction */}
-                                <View
-                                  key="average-transaction-card"
-                                  className="rounded-2xl overflow-hidden"
-                                  style={{
-                                    width: 355,
-                                    height: 180,
-                                    marginLeft: 16
-                                  }}
-                                >
-                                  <LinearGradient
-                                    colors={['#10B981', '#059669', '#047857']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    style={{ flex: 1, padding: 16 }}
-                                  >
-                                    <View className="flex-row justify-between items-start mb-4">
-                                      <View className="w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
-                                        <Ionicons name="calculator-outline" size={28} color="#ffffff" />
-                                      </View>
-                                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
-                                        <Text style={{ color: '#ffffff' }} className="text-xs font-medium">Average</Text>
-                                      </View>
-                                    </View>
-                                    <View className="items-start justify-center py-2">
-                                      <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm mb-1">Average Transaction</Text>
-                                      <Text style={{ color: '#ffffff' }} className="text-4xl font-bold">
-                                        Rs {transactions.length > 0 ?
-                                          (transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0) / transactions.length).toFixed(2) :
-                                          '0.00'}
-                                      </Text>
-                                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }} className="text-xs mt-3">
-                                        Based on {transactions.length} transactions
-                                      </Text>
-                                    </View>
-                                  </LinearGradient>
-                                </View>
-                              </ScrollView>
-
-                              {/* Card Indicator Dots */}
-                              <View className="flex-row justify-center items-center mt-4 mb-2">
-                                {[0, 1, 2].map((index) => {
-                                  // Define colors for each card
-                                  const cardColors = [
-                                    '#9333EA', // Purple for Transactions
-                                    '#3B82F6', // Blue for Settlements
-                                    '#10B981'  // Green for Average
-                                  ];
-
-                                  return (
-                                    <View
-                                      key={index}
-                                      className={`mx-1 rounded-full ${activeCardIndex === index ? 'w-3 h-3' : 'w-2 h-2'}`}
-                                      style={{
-                                        backgroundColor: activeCardIndex === index
-                                          ? cardColors[index]
-                                          : colors.outline + '50',
-                                        transform: [{ scale: activeCardIndex === index ? 1 : 0.8 }]
-                                      }}
-                                    />
-                                  );
-                                })}
-                              </View>
-                            </Animated.View>
+                          <View className="flex-1 bg-red-400 p-2 rounded-xl" style={{
+                            borderWidth: 1,
+                            borderColor: 'rgba(255, 255, 255, 0.15)'
+                          }}>
+                            <View className="flex-row items-center">
+                              <Ionicons
+                                name="arrow-up"
+                                size={16}
+                                color="#FFFFFF" // Red for pay
+                              />
+                              <Text style={{ color: 'rgba(255, 255, 255, 0.9)' }} className="text-xs ml-1">To Pay</Text>
+                            </View>
+                            <Text style={{ color: '#FFFFFF' }} className="text-sm font-bold mt-1 pl-1">
+                              Rs {balance.owed?.toFixed(2) || '0.00'}
+                            </Text>
                           </View>
                         </View>
+                      </LinearGradient>
+                    </View>
+                  ))}
+
+                {/* Transactions Card */}
+                <View
+                  key="transactions-card"
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    width: screenWidth - 32,
+                    height: 220,
+                    marginRight: 16,
+                    marginLeft: 16
+                  }}
+                >
+                  <LinearGradient
+                    colors={['#1C1B1F', '#7E22CE', '#6B21A8']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{ flex: 1, padding: 16 }}
+                  >
+                    <View className="flex-row justify-between items-start mb-4">
+                      <View className="w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+                        <Ionicons name="swap-horizontal" size={28} color="#ffffff" />
+                      </View>
+                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
+                        <Text style={{ color: '#ffffff' }} className="text-xs font-medium">Transactions</Text>
                       </View>
                     </View>
-                    // </TouchableOpacity>
-                  );
-                })
+                    <View className="items-start justify-center py-2">
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm mb-1">Total Transactions</Text>
+                      <Text style={{ color: '#ffffff' }} className="text-4xl font-bold">{transactions.length}</Text>
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }} className="text-xs mt-3">
+                        {transactions.length > 0 ? `Last: ${transactions[0]?.date}` : 'No recent transactions'}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+
+                {/* Settlements Card */}
+                <View
+                  key="settlements-card"
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    width: screenWidth - 32,
+                    height: 220,
+                    marginLeft: 16,
+                    marginRight: 16
+                  }}
+                >
+                  <LinearGradient
+                    colors={['#1C1B1F', '#2563EB', '#1D4ED8']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{ flex: 1, padding: 16 }}
+                  >
+                    <View className="flex-row justify-between items-start mb-4">
+                      <View className="w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+                        <Ionicons name="git-network-outline" size={28} color="#ffffff" />
+                      </View>
+                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
+                        <Text style={{ color: '#ffffff' }} className="text-xs font-medium">Settlements</Text>
+                      </View>
+                    </View>
+                    <View className="items-start justify-center py-2">
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm mb-1">Total Settlements</Text>
+                      <Text style={{ color: '#ffffff' }} className="text-4xl font-bold">{settlements.length}</Text>
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }} className="text-xs mt-3">
+                        {settlements.length > 0 ? 'Pending resolution' : 'All settled up'}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+
+                {/* Average Transaction Card */}
+                <View
+                  key="average-transaction-card"
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    width: screenWidth - 32,
+                    height: 220
+                  }}
+                >
+                  <LinearGradient
+                    colors={['#1C1B1F', '#059669', '#047857']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{ flex: 1, padding: 16 }}
+                  >
+                    <View className="flex-row justify-between items-start mb-4">
+                      <View className="w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+                        <Ionicons name="calculator-outline" size={28} color="#ffffff" />
+                      </View>
+                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
+                        <Text style={{ color: '#ffffff' }} className="text-xs font-medium">Average</Text>
+                      </View>
+                    </View>
+                    <View className="items-start justify-center py-2">
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm mb-1">Average Transaction</Text>
+                      <Text style={{ color: '#ffffff' }} className="text-4xl font-bold">
+                        Rs {transactions.length > 0 ?
+                          (transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0) / transactions.length).toFixed(2) :
+                          '0.00'}
+                      </Text>
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }} className="text-xs mt-3">
+                        Based on {transactions.length} transactions
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+              </ScrollView>
             )}
+
+            {/* Card Indicator Dots */}
+            <View className="flex-row justify-center items-center mt-4 mb-2">
+              {[0, 1, 2, 3].map((index) => {
+                const cardColors = [
+                  '#9333EA', // Purple for Balance
+                  '#9333EA', // Purple for Transactions
+                  '#3B82F6', // Blue for Settlements
+                  '#10B981'  // Green for Average
+                ];
+                return (
+                  <View
+                    key={index}
+                    className={`mx-1 rounded-full ${activeCardIndex === index ? 'w-3 h-3' : 'w-2 h-2'}`}
+                    style={{
+                      backgroundColor: activeCardIndex === index
+                        ? cardColors[index]
+                        : colors.outline + '50',
+                      transform: [{ scale: activeCardIndex === index ? 1 : 0.8 }]
+                    }}
+                  />
+                );
+              })}
+            </View>
           </View>
 
           {/* Recent Activity Tabs */}

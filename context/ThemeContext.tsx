@@ -12,7 +12,7 @@ interface ThemeContextType {
 
 const themes = {
   light: {
-    background: '#FDFCFF',
+    background: '#F1F1F1',
     onBackground: '#1D1B1A',
     surface: '#FFFBFE', // Pure white surface
     onSurface: '#1D1B1A',
@@ -38,7 +38,7 @@ const themes = {
     inversePrimary: '#D0BCFF',
     shadow: '#000000', // Black for shadows
     statusBar: 'dark-content' as 'dark-content' | 'light-content',
-    card: '#E0E0E03A',
+    card: '#FFFFFF',
     border: '#CAC4D0', // Existing border color
     success: '#146B3A', // Existing success color
     tabBar: '#FFFBFE', // Surface color for tab bar

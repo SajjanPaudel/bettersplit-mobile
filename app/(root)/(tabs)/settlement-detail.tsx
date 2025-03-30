@@ -1,11 +1,16 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useHaptic } from '../../../context/HapticContext';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { endpoints } from '../../../config/api';
+import QRCode from 'react-native-qrcode-svg';
+import { Picker } from '@react-native-picker/picker';
 
 interface IndividualSettlement {
   from: string;
@@ -22,18 +27,83 @@ interface SettlementData {
   individual_settlements: IndividualSettlement[];
 }
 
+
+interface AccountDetails {
+  bankCode?: string;
+  accountName?: string;
+  accountNumber?: string;
+  name?: string;
+  eSewa_id?: string;
+  Khalti_ID?: string;
+}
+
+interface AccountItem {
+  id: number;
+  account_type: string;
+  account_details: AccountDetails;
+  is_primary: boolean;
+  created_at: string;
+}
+
+interface AccountData {
+  [username: string]: AccountItem[];
+}
+
 export default function SettlementDetail() {
   const { colors } = useTheme();
   const params = useLocalSearchParams();
   const [settlement, setSettlement] = useState<SettlementData | null>(null);
+  const [toAccount, setToAccount] = useState<{ username: string, accounts: AccountItem[] } | null>(null);
   const [date] = useState(new Date().toISOString().split('T')[0]);
+  const [expanded, setExpanded] = useState(false);
   const { triggerHaptic } = useHaptic();
+  const [selectedAccount, setSelectedAccount] = useState<AccountItem | null>(null);
+
+  const tabBarHeight = useMemo(() => {
+    const { height } = Dimensions.get('window');
+    return height * 0.09;
+  }, []);
 
   useEffect(() => {
+    const fetchAccountDetails = async (username: string) => {
+      try {
+        const tokensString = await AsyncStorage.getItem('tokens');
+        let headers = {};
+        if (tokensString) {
+          const tokens = JSON.parse(tokensString);
+          headers = {
+            'Authorization': `Bearer ${tokens.access_token}`
+          };
+        }
+        const response = await axios.get(endpoints.simple_accounts, {
+          headers,
+          params: { type: username }
+        });
+        if (response.data.success) {
+          // Get first account details for the username
+          const accounts = response.data.data[username];
+          if (accounts && accounts.length > 0) {
+            return {
+              username,
+              accounts
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching account details:', error);
+      }
+      return null;
+    };
+
     if (params.settlement) {
       try {
         const settlementData = JSON.parse(params.settlement as string);
         setSettlement(settlementData);
+
+        // Fetch account details for the 'to' field
+        fetchAccountDetails(settlementData.to).then(account => {
+          setToAccount(account);
+        });
       } catch (error) {
         console.error('Error parsing settlement data:', error);
       }
@@ -41,11 +111,11 @@ export default function SettlementDetail() {
   }, [params.settlement]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background , marginBottom: tabBarHeight}}>
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}
         <View className="px-4 py-3 flex-row items-center justify-between">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => {
               router.back();
               triggerHaptic();
@@ -57,7 +127,7 @@ export default function SettlementDetail() {
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={{ color: colors.text }} className="text-lg font-semibold">Settlement Details</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             className="p-2 rounded-full"
             style={{ backgroundColor: colors.card }}
           >
@@ -69,7 +139,7 @@ export default function SettlementDetail() {
           {settlement ? (
             <Animated.View entering={FadeInUp.delay(100)} className="mt-4">
               {/* Total Settlement Amount */}
-              <View 
+              <View
                 className="p-6 rounded-2xl items-center"
                 style={{ backgroundColor: colors.card }}
               >
@@ -90,70 +160,10 @@ export default function SettlementDetail() {
             </View>
           )}
 
-          {settlement && (
-            <Animated.View entering={FadeInUp.delay(200)} className="mt-6">
-              {/* Settlement Details */}
-              <View 
-                className="p-4 rounded-2xl"
-                style={{ backgroundColor: colors.card }}
-              >
-                <Text style={{ color: colors.text }} className="text-sm font-medium mb-4">
-                  Settlement Details
-                </Text>
-                <View className="flex-row items-center justify-between mb-4">
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 rounded-full bg-purple-500/10 items-center justify-center">
-                      <Text style={{ color: colors.primary }} className="text-sm font-medium">
-                        {settlement.from.substring(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={{ color: colors.text }} className="ml-3 text-base">
-                      {settlement.from}
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text style={{ color: colors.text }} className="text-base">
-                      Rs {Math.abs(settlement.amount).toFixed(2)}
-                    </Text>
-                    <Text 
-                      style={{ color: '#F87171' }} 
-                      className="text-sm"
-                    >
-                      To Pay
-                    </Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center justify-between mb-4">
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center">
-                      <Text style={{ color: '#34D399' }} className="text-sm font-medium">
-                        {settlement.to.substring(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={{ color: colors.text }} className="ml-3 text-base">
-                      {settlement.to}
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text style={{ color: colors.text }} className="text-base">
-                      Rs {Math.abs(settlement.amount).toFixed(2)}
-                    </Text>
-                    <Text 
-                      style={{ color: '#34D399' }} 
-                      className="text-sm"
-                    >
-                      To Receive
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </Animated.View>
-          )}
-
           {settlement && settlement.individual_settlements.length > 0 && (
             <Animated.View entering={FadeInUp.delay(300)} className="mt-6 mb-8">
               {/* Individual Settlements */}
-              <View 
+              <View
                 className="p-4 rounded-2xl"
                 style={{ backgroundColor: colors.card }}
               >
@@ -175,6 +185,80 @@ export default function SettlementDetail() {
                     </Text>
                   </View>
                 ))}
+              </View>
+            </Animated.View>
+          )}
+
+          {settlement && (
+            <Animated.View entering={FadeInUp.delay(200)} className="mt-6">
+              <View className="p-4 rounded-2xl" style={{ backgroundColor: colors.card }}>
+                <Text style={{ color: colors.text }} className="text-sm font-medium mb-4">
+                  Account Details
+                </Text>
+                {toAccount && (
+                  <View className="flex-col">
+                    <View className="flex-row items-center mb-4">
+                      <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center">
+                        <Text style={{ color: colors.text }} className="text-sm font-medium">
+                          {toAccount.username.substring(0, 2).toUpperCase()}
+                        </Text>
+                      </View>
+                      <Text style={{ color: colors.text }} className="ml-3 text-base">
+                        {toAccount.username}
+                      </Text>
+                    </View>
+
+                    <View className="mb-4 rounded-lg" style={{ backgroundColor: colors.surfaceVariant }}>
+                      <Picker
+                        selectedValue={selectedAccount?.id}
+                        onValueChange={(itemValue) => {
+                          const account = toAccount.accounts.find(a => a.id === itemValue);
+                          setSelectedAccount(account || null);
+                        }}
+                        style={{ color: colors.text }}
+                        dropdownIconColor={colors.text}
+                      >
+                        <Picker.Item label="Select an account" value={null} />
+                        {toAccount.accounts.map((account) => (
+                          <Picker.Item
+                            key={account.id}
+                            label={account.account_type.toUpperCase()}
+                            value={account.id}
+                          />
+                        ))}
+                      </Picker>
+                    </View>
+
+                    {selectedAccount && (
+                      <View className="p-4 rounded-lg" >
+                        {Object.entries(selectedAccount.account_details).map(([key, value]) => (
+                          <View key={key} className="flex-row justify-between mt-1 mb-2">
+                            <Text style={{ color: colors.outline }} className="text-sm capitalize">
+                              {key.replace(/([A-Z])/g, ' $1').trim()}:
+                            </Text>
+                            <Text style={{ color: colors.text }} className="text-sm">
+                              {value}
+                            </Text>
+                          </View>
+                        ))}
+
+                        <View className="mt-4 items-center">
+                          <QRCode
+                            value={JSON.stringify({
+                              ...selectedAccount.account_details
+                            })}
+                            size={200}
+                            color={colors.text}
+                            backgroundColor={colors.background}
+                          />
+                          <Text style={{ color: colors.outline }} className="mt-2 text-xs">
+                            Scan to view account details
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
             </Animated.View>
           )}
